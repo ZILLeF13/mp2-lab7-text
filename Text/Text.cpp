@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string.h>
 
-///TMem TTextLink::mem;
+TMem TTextLink::mem;
 
 void main()
 {
@@ -12,10 +12,10 @@ void main()
 
 
 
-	text.Read("text.txt");
+	//text.Read("text.txt");
 
 
-	TTextLink::PrintFree();
-	TTextLink::Clean(text);
-	TTextLink::PrintFree();
+	//TTextLink::PrintFree();
+	//TTextLink::Clean(text);
+	//TTextLink::PrintFree();
 }

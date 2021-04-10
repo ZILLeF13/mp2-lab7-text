@@ -5,6 +5,15 @@
 #include <fstream>
 #include "stack.h"
 
+class TText;
+
+class TTextLink;
+
+struct TMem
+{
+	TTextLink* pFirst, * pLast, * pFree;
+};
+
 class TTextLink
 {
 	//TTextLink* pNext, * pDown;
@@ -25,24 +34,16 @@ public:
 	}
 	~TTextLink()
 	{}
-	//static TMem mem;
+	static TMem mem;
 	static void InitMem(int size = 100);
 	void* operator new(size_t n);
 	void operator delete(void* p);
-	static void PrintFree();
+	static void PrintFree(TText &t);
 	static void Clean(TText& t);
 };
 
-struct TMem
-{
-	TTextLink* pFirst, * pLast, * pFree;
-};
-
-TMem TTextLink::mem;
-
 class TText
 {
-protected:
 	//TTextLink* pFirst, *pCurr;
 	//Stack<TTextLink*> st;
 	//int level;
@@ -65,7 +66,11 @@ public:
 	}
 	void GoDownLink()
 	{
-
+		if (!st.Empty())
+		{
+			pCurr = st.Top();
+			st.Pop();
+		}
 	}
 	void GoPrevLink()
 	{
@@ -241,7 +246,7 @@ void TTextLink::InitMem(int size)
 {
 	int Size = sizeof(TTextLink) * size;
 	mem.pFirst = mem.pFree = (TTextLink*)malloc(Size);
-	mem.pLast = mem.pFirst + Size - 1;
+	mem.pLast = mem.pFirst + size - 1;
 	TTextLink* tmp = mem.pFirst;
 	while (tmp != mem.pLast)
 	{
@@ -254,7 +259,7 @@ void TTextLink::InitMem(int size)
 	tmp->flag = false;
 }
 
-void TTextLink::PrintFree()
+void TTextLink::PrintFree(TText &t)
 {
 
 }
