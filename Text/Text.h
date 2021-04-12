@@ -22,7 +22,7 @@ public:
 	TTextLink* pNext, * pDown;
 	char str[80];
 	bool flag;
-	TTextLink(char* s = NULL, TTextLink* pN = NULL, TTextLink* pD = NULL)
+	TTextLink(const char* s = NULL, TTextLink* pN = NULL, TTextLink* pD = NULL)
 	{
 		pNext = pN;
 		pDown = pD;
@@ -37,8 +37,8 @@ public:
 	static TMem mem;
 	static void InitMem(int size = 100);
 	void* operator new(size_t n);
-	void operator delete(void* p);
-	static void PrintFree(TText &t);
+	void operator delete(void* p); 
+	static void PrintFree();
 	static void Clean(TText& t);
 };
 
@@ -51,6 +51,7 @@ public:
 	Stack<TTextLink*> st;
 	int level;
 	TTextLink* pFirst, * pCurr;
+
 	void GoFirst()
 	{
 		pCurr = pFirst;
@@ -77,29 +78,29 @@ public:
 		if (pFirst != pCurr)
 			pCurr = st.Pop();
 	} 
-	void InsNextLine(char* s)
+	void InsNextLine(const char* s)
 	{
 		TTextLink* t;
-		t = new TTextLink(s, pCurr->pNext);
-		pCurr->pNext;
+		t = new TTextLink(s, pCurr->pNext,NULL);
+		pCurr->pNext = t;
 	}
-	void InsNextSection(char* s)
+	void InsNextSection(const char* s)
 	{
 		TTextLink* t;
 		t= new TTextLink(s, NULL, pCurr->pNext);
 		pCurr->pNext = t;
 	}
-	void InsDownSection(char* s)
+	void InsDownSection(const char* s)
 	{
 		TTextLink* t;
-		t = new TTextLink(s, NULL, pCurr->pDown);
+		t = new TTextLink(s, pCurr->pDown,NULL);
 		pCurr->pDown = t;
 	}
-	void InsDownLine(char* s)
+	void InsDownLine(const char* s)
 	{
 		TTextLink* t;
-		t = new TTextLink(s, pCurr->pDown);
-		pCurr->pDown;
+		t = new TTextLink(s, pCurr->pDown,NULL);
+		pCurr->pDown = t;
 	}
 	void DelNextLine()
 	{
@@ -122,19 +123,22 @@ public:
 	void Print()
 	{
 		level = 0;
-		PrintRec(pFirst);
+		PrintRec(pFirst,level);
 	}
-	void PrintRec(TTextLink *t)
+	void PrintRec(TTextLink *t,int level)
 	{
-		for (int i = 0; i < level; i++)
+		if (t != NULL)
 		{
-			std::cout << ' ';
+			for (int i = 0; i < level; i++)
+			{
+				std::cout << ' ';
+			}
+			std::cout << t->str << '\n';
+			++level;
+			PrintRec(t->pDown, level);
+			--level;
+			PrintRec(t->pNext, level);
 		}
-		std::cout << t->str << '\n';
-		level++;
-		PrintRec(t->pDown);
-		level--;
-		PrintRec(t->pNext);
 	}
 	void Save(char* fn)
 	{
@@ -180,7 +184,7 @@ public:
 				else
 				{
 					TTextLink* tmp = new TTextLink(Buff);
-					if (pC = NULL)
+					if (pC == NULL)
 						pF = pC = tmp;
 					else
 					{
@@ -219,7 +223,10 @@ public:
 	{
 		return st.Empty();
 	}
-	//GetCurr
+	TTextLink* GetCurr()
+	{
+		return pCurr;
+	}
 
 };
 
@@ -246,27 +253,40 @@ void TTextLink::InitMem(int size)
 {
 	int Size = sizeof(TTextLink) * size;
 	mem.pFirst = mem.pFree = (TTextLink*)malloc(Size);
-	mem.pLast = mem.pFirst + size - 1;
+	mem.pLast = mem.pFirst + (size - 1);
 	TTextLink* tmp = mem.pFirst;
 	while (tmp != mem.pLast)
 	{
 		tmp->pNext = tmp + 1;
-		tmp->flag = false;
+		tmp->flag = true;
 		tmp->str[0] = '\0';
 		tmp = tmp->pNext;
 	}
 	tmp->pNext = NULL;
-	tmp->flag = false;
+	tmp->flag = true;
+	tmp->str[0] = '\0';
 }
 
-void TTextLink::PrintFree(TText &t)
-{
-
-}
-
-void TTextLink::Clean(TText& t)
+void TTextLink::PrintFree()
 {
 	TTextLink* tmp = mem.pFree;
+	bool flag = false;
+	while (tmp != mem.pLast)
+	{
+		if (tmp->str[0] != '\0')
+		{
+			std::cout << tmp->str << ' ' << std::endl;
+			flag = true;
+		}
+		tmp = tmp->pNext;
+	}
+	if (tmp->str[0] == '\0' && flag==false)
+		std::cout << "Пусто" << std::endl;
+}
+
+void TTextLink::Clean(TText& t) 
+{
+	/*TTextLink* tmp = mem.pFree;
 	while (tmp != NULL)
 	{
 		tmp->flag = 1;
@@ -283,5 +303,33 @@ void TTextLink::Clean(TText& t)
 			tmp->flag = false;
 		else
 			delete tmp;
+	}*/
+	TTextLink* tmp = mem.pFree;
+	while (tmp != mem.pLast)
+	{
+		tmp->flag = false;
+		tmp = tmp->pNext;
+	} 
+	tmp->flag = false;
+	for (t.Reset(); !t.IsEnd(); t.GoNext())
+	{
+		t.GetCurr()->flag = false;
 	}
+	tmp = mem.pFirst;
+	while (tmp != mem.pLast)
+	{
+		if (tmp->flag)
+		{
+			 delete(tmp);
+		}
+		else
+			tmp->flag = true;
+		tmp = tmp + 1;
+	}
+	if (tmp->flag)
+	{
+		 delete(tmp);
+	}
+	else
+		tmp->flag = true;
 }
