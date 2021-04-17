@@ -108,16 +108,16 @@ public:
 		{
 			TTextLink* t = pCurr->pNext;
 			pCurr->pNext = t->pNext;
-			delete t;
+			TTextLink:: operator delete (t);
 		}
 	}
 	void DelDownLine()
 	{
-		if (pCurr->pNext)
+		if (pCurr->pDown)
 		{
 			TTextLink* t = pCurr->pDown;
 			pCurr->pDown = t->pNext;
-			delete t;
+			TTextLink:: operator delete (t);
 		}
 	}
 	void Print()
