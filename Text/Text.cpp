@@ -13,7 +13,7 @@ int main()
     text.Read("text.txt");
 	text.Print();
 	std::cout << std::endl;
-	std::cout << std::endl << "ѕечать мусора : "<<std::endl;
+	/*std::cout << std::endl << "ѕечать мусора : "<<std::endl;
 	TTextLink::Clean(text);
 	TTextLink::PrintFree();
 	std::cout << std::endl;
@@ -46,7 +46,7 @@ int main()
 	}
 	text.Print();
 	std::cout << std::endl;
-
+	*/
 	while (true)
 	{
 		std::cout << "¬ведите номер строки, на которую хотите перейти :";
@@ -63,10 +63,11 @@ int main()
 				std::cout << "3. InsDownLine" << std::endl;
 				std::cout << "4. InsDownSection." << std::endl;
 				std::cout << "5. DelNextLine" << std::endl;
+				std::cout << "6. DelDownLine" << std::endl;
 				int n1;
 				std::cin >> n1;
 				if (n1 == 1)
-				text.InsNextLine("NEW_Line");
+					text.InsNextLine("NEW_Line");
 				if (n1 == 4)
 					text.InsDownSection("NEW_Title");
 				if (n1 == 3)
@@ -75,10 +76,19 @@ int main()
 					text.InsNextSection("NEW_Title");
 				if (n1 == 5)
 				{
-					text.DelDownLine();
-					i++;//text.GoNext();
+					text.DelNextLine();
 					TTextLink::Clean(text);
 					TTextLink::PrintFree();
+					text.Print();
+					break;
+				}
+				if (n1 == 6)
+				{
+					text.DelDownLine();
+					TTextLink::Clean(text);
+					TTextLink::PrintFree();
+					text.Print();
+					break;
 				}
 				text.Print();
 			}

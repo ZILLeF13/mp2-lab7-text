@@ -101,8 +101,7 @@ T Stack<T> ::Pop()
 	{
 		throw "Pop";
 	}
-	Size--;
-	return mas[Size];
+	return mas[--Size];
 }
 
 template <class T>

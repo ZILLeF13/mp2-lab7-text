@@ -24,19 +24,32 @@ public:
 	bool flag;
 	TTextLink(const char* s = NULL, TTextLink* pN = NULL, TTextLink* pD = NULL)
 	{
-		pNext = pN;
+		/*pNext = pN;
 		pDown = pD;
 		if (s)
 		{
 			strcpy_s(str, s);
 		}
-		else str[0] = '\0';
+		else str[0] = '\0';*/
+		if (s == NULL)
+			str[0] = '\0';
+		else
+		{
+			int i = 0;
+			do
+			{
+				str[i] = s[i];
+				i++;
+			} while (s[i - 1] != '\0');
+		}
+		pNext = pN;
+		pDown = pD;
 	}
 	~TTextLink()
 	{}
 	static TMem mem;
 	static void InitMem(int size = 100);
-	void* operator new(size_t n);
+	void* operator new(std::size_t n);
 	void operator delete(void* p); 
 	static void PrintFree();
 	static void Clean(TText& t);
@@ -55,6 +68,7 @@ public:
 	void GoFirst()
 	{
 		pCurr = pFirst;
+		if(!st.Empty())
 		st.Clear_Stack();
 	}
 	void GoNextLink()
@@ -67,16 +81,19 @@ public:
 	}
 	void GoDownLink()
 	{
-		if (!st.Empty())
+		if (pCurr->pDown != NULL)
 		{
-			pCurr = st.Top();
-			st.Pop();
+			st.Push(pCurr);
+			pCurr = pCurr->pDown;
 		}
 	}
 	void GoPrevLink()
 	{
-		if (pFirst != pCurr)
-			pCurr = st.Pop();
+		if (!st.Empty())
+		{
+			pCurr = st.Top();
+	    	st.Pop();
+	    }
 	} 
 	void InsNextLine(const char* s)
 	{
@@ -123,9 +140,9 @@ public:
 	void Print()
 	{
 		level = 0;
-		PrintRec(pFirst,level);
+		PrintRec(pFirst);
 	}
-	void PrintRec(TTextLink *t,int level)
+	void PrintRec(TTextLink *t)
 	{
 		if (t != NULL)
 		{
@@ -134,15 +151,16 @@ public:
 				std::cout << ' ';
 			}
 			std::cout << t->str << '\n';
-			++level;
-			PrintRec(t->pDown, level);
-			--level;
-			PrintRec(t->pNext, level);
+			level++;
+			PrintRec(t->pDown);
+			level--;
+			PrintRec(t->pNext);
 		}
 	}
 	void Save(char* fn)
 	{
 		std::ofstream ost(fn);
+		ost.open(fn);
 		SaveRec(pFirst, ost);
 		ost.close();
 	}
@@ -171,7 +189,7 @@ public:
 	{
 		TTextLink* pF = NULL, *pC = NULL;
 		char Buff[80];
-		while (ifs.eof() == 0)
+		while (ifs.eof() == false)
 		{
 			ifs.getline(Buff, 80, '\n');
 			if (Buff[0] == '}')
@@ -183,11 +201,21 @@ public:
 					pC->pDown = ReadRec(ifs);
 				else
 				{
-					TTextLink* tmp = new TTextLink(Buff);
+					//TTextLink* tmp = new TTextLink(Buff);
 					if (pC == NULL)
+					{
+						TTextLink* tmp = (TTextLink*)TTextLink::operator new(1);
+						strcpy_s(tmp->str, Buff);
+						tmp->pDown = NULL;
+						tmp->pNext = NULL;
 						pF = pC = tmp;
+					}
 					else
 					{
+						TTextLink* tmp = (TTextLink*)TTextLink::operator new(1);
+						strcpy_s(tmp->str, Buff);
+						tmp->pDown = NULL;
+						tmp->pNext = NULL;
 						pC->pNext = tmp;
 						pC = tmp;
 					}
@@ -197,16 +225,16 @@ public:
 	}
 	void Reset()
 	{
-		if (pFirst)
+		if (pFirst!=NULL)
 		{
 			st.Clear_Stack();
+		}
 			pCurr = pFirst;
 			st.Push(pFirst);
 			if (pFirst->pNext)
 				st.Push(pFirst->pNext);
 			if (pFirst->pDown)
 				st.Push(pFirst->pDown);
-		}
 	}
 	void GoNext()
 	{
@@ -232,14 +260,14 @@ public:
 
 
 
-void* TTextLink::operator new(size_t n)
+void* TTextLink::operator new(std::size_t n)
 {
 	TTextLink* pC = mem.pFree;
-	if (mem.pFree != NULL)
+	if (mem.pFree->pNext != NULL)
 	{
-		mem.pFree = pC->pNext;
-		return pC;
+		mem.pFree = mem.pFree->pNext;
 	}
+	return pC;
 }
 
 void TTextLink::operator delete(void* p)
@@ -254,11 +282,11 @@ void TTextLink::InitMem(int size)
 	int Size = sizeof(TTextLink) * size;
 	mem.pFirst = mem.pFree = (TTextLink*)malloc(Size);
 	mem.pLast = mem.pFirst + (size - 1);
-	TTextLink* tmp = mem.pFirst;
+	TTextLink* tmp = mem.pFree; //first
 	while (tmp != mem.pLast)
 	{
 		tmp->pNext = tmp + 1;
-		tmp->flag = true;
+		tmp->flag = false; //true
 		tmp->str[0] = '\0';
 		tmp = tmp->pNext;
 	}
@@ -280,8 +308,13 @@ void TTextLink::PrintFree()
 		}
 		tmp = tmp->pNext;
 	}
+	/*if (tmp->str[0] != '\0')
+		std::cout << tmp->str << ' ';*/
+	
 	if (tmp->str[0] == '\0' && flag==false)
 		std::cout << "Пусто" << std::endl;
+	std::cout << std::endl;
+
 }
 
 void TTextLink::Clean(TText& t) 
@@ -307,29 +340,25 @@ void TTextLink::Clean(TText& t)
 	TTextLink* tmp = mem.pFree;
 	while (tmp != mem.pLast)
 	{
-		tmp->flag = false;
+		tmp->flag = true; 
 		tmp = tmp->pNext;
 	} 
-	tmp->flag = false;
+	tmp->flag = true; //false
 	for (t.Reset(); !t.IsEnd(); t.GoNext())
 	{
-		t.GetCurr()->flag = false;
+		t.GetCurr()->flag = true;  //false
 	}
 	tmp = mem.pFirst;
-	while (tmp != mem.pLast)
+	while (tmp <= mem.pLast) //!=
 	{
 		if (tmp->flag)
-		{
-			 delete(tmp);
-		}
+			tmp->flag = false;
 		else
-			tmp->flag = true;
-		tmp = tmp + 1;
+		    delete(tmp);
+		tmp++;
 	}
 	if (tmp->flag)
-	{
-		 delete(tmp);
-	}
+		tmp->flag = false;
 	else
-		tmp->flag = true;
+		delete(tmp);
 }
