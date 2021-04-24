@@ -157,10 +157,9 @@ public:
 			PrintRec(t->pNext);
 		}
 	}
-	void Save(char* fn)
+	void Save(const char* fn)
 	{
 		std::ofstream ost(fn);
-		ost.open(fn);
 		SaveRec(pFirst, ost);
 		ost.close();
 	}

@@ -94,10 +94,13 @@ int main()
 			}
 		}
 		std::cout << "1. Продолжить" << std::endl;
-		std::cout << "2. Выход" << std::endl;
+		std::cout << "2. Save" << std::endl;
+		std::cout << "3. Выход" << std::endl;
 		std::cin >> n;
-		if (n == 2)
+		if (n == 3)
 			return 0;
+		if (n == 2)
+			text.Save("save.txt");
 	}
 	return 0;
 }
